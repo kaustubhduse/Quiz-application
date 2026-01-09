@@ -1,65 +1,217 @@
-import Image from "next/image";
+"use client"
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+import axios from "axios"
+import { LogOut } from "lucide-react"
+import LoadingSpinner from "@/components/LoadingSpinner"
 
 export default function Home() {
+  const router = useRouter()
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [history, setHistory] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [hasProgress, setHasProgress] = useState(false)
+
+  const getUserFromCookie = () => {
+    const match = document.cookie.match(new RegExp('(^| )curr_user=([^;]+)'))
+    if (match) {
+        try { return JSON.parse(decodeURIComponent(match[2])) } catch(e){ return null }
+    }
+    return null
+  }
+
+  useEffect(() => {
+    const user = getUserFromCookie()
+    if (user) {
+        setIsAuthenticated(true)
+        fetchData(user.email)
+    } else {
+        setLoading(false)
+    }
+  }, [])
+
+  const fetchData = async (email: string) => {
+    try {
+        const [histRes, progRes] = await Promise.all([
+            axios.get(`/api/attempts?email=${email}`),
+            axios.get(`/api/progress?email=${email}`)
+        ])
+        setHistory(histRes.data.history || [])
+        setHasProgress(!progRes.data.empty)
+    } catch (e) {
+        console.error("Failed to fetch data", e)
+    } finally {
+        setLoading(false)
+    }
+  }
+
+  const handleLogout = async () => {
+    await axios.post("/api/auth/logout")
+    setIsAuthenticated(false)
+    setHistory([])
+    setHasProgress(false)
+    router.push("/login")
+  }
+
+  const handleStart = () => {
+    router.push("/instructions?fresh=true")
+  }
+
+  const handleResume = () => {
+    router.push("/quiz") 
+  }
+
+  if (loading) return <LoadingSpinner />
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white flex flex-col items-center p-6 relative overflow-hidden font-sans">
+      {/* Background Ambient Glows */}
+      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-purple-600/30 rounded-full mix-blend-screen filter blur-[100px] animate-pulse-slow"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-600/30 rounded-full mix-blend-screen filter blur-[100px] animate-pulse-slow animation-delay-2000"></div>
+
+      {isAuthenticated && (
+          <div className="absolute top-6 right-6 z-20">
+            <button 
+                onClick={handleLogout}
+                className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 px-5 py-2.5 rounded-full backdrop-blur-md transition-all text-sm font-medium hover:shadow-lg hover:shadow-purple-500/20 group"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+
+                <span className="text-gray-300 group-hover:text-white transition-colors">Logout</span>
+                <LogOut size={16} className="text-gray-400 group-hover:text-white transition-colors" />
+            </button>
+          </div>
+      )}
+
+      <div className="relative z-10 flex flex-col items-center justify-center flex-1 w-full max-w-5xl space-y-16 py-12">
+        <div className="text-center space-y-8 animate-fade-in-up">
+            <div className="inline-block relative">
+                 <h1 className="text-6xl md:text-8xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-blue-300 via-purple-300 to-pink-300 drop-shadow-2xl">
+                    Master Your Exam
+                 </h1>
+                 <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-purple-500 blur-2xl opacity-20 rounded-full -z-10"></div>
+            </div>
+            
+            <p className="text-xl md:text-2xl text-slate-300 max-w-3xl mx-auto leading-relaxed font-light">
+                Experience a premium environment tailored for success. <br className="hidden md:block"/> Practice with precision, analyze deeply, and conquer your goals.
+            </p>
+            
+            <div className="flex flex-col md:flex-row gap-6 justify-center items-center mt-10">
+            {isAuthenticated ? (
+                <>
+                    {hasProgress && (
+                        <button
+                            onClick={handleResume}
+                            className="group relative px-8 py-4 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 shadow-2xl shadow-orange-500/30 transform hover:-translate-y-1 hover:scale-105 transition-all duration-300 min-w-[200px] overflow-hidden"
+                        >
+                            <div className="absolute inset-0 bg-white/20 group-hover:bg-white/30 transition-colors"></div>
+                            <div className="relative flex flex-col items-center">
+                                <span className="text-xl font-bold tracking-tight">Resume</span>
+                                <span className="text-xs font-medium text-orange-100 uppercase tracking-wider mt-1">Continue Session</span>
+                            </div>
+                        </button>
+                    )}
+                    
+                    <button
+                        onClick={handleStart}
+                        className={`group relative px-8 py-4 rounded-2xl shadow-2xl transform hover:-translate-y-1 hover:scale-105 transition-all duration-300 min-w-[200px] overflow-hidden ${hasProgress ? "bg-slate-800 border border-slate-700 hover:border-slate-600" : "bg-gradient-to-br from-emerald-500 to-teal-600 shadow-emerald-500/30"}`}
+                    >
+                         {!hasProgress && <div className="absolute inset-0 bg-white/20 group-hover:bg-white/30 transition-colors"></div>}
+                         <div className="relative flex flex-col items-center">
+                            <span className={`text-xl font-bold tracking-tight ${hasProgress ? "text-slate-300 group-hover:text-white" : "text-white"}`}>
+                                {history.length > 0 ? "Re-attempt Test" : "Start Exam"}
+                            </span>
+                            {history.length > 0 && <span className={`text-xs font-medium uppercase tracking-wider mt-1 ${hasProgress ? "text-slate-500 group-hover:text-slate-400" : "text-emerald-100"}`}>Start Fresh</span>}
+                            {hasProgress && <span className="text-xs font-medium text-slate-500 group-hover:text-red-400 mt-1 uppercase tracking-wider transition-colors">Discard Current</span>}
+                         </div>
+                    </button>
+                </>
+            ) : (
+                <div className="flex gap-4">
+                    <button
+                        onClick={() => router.push("/login")}
+                        className="px-10 py-4 rounded-2xl bg-white text-slate-900 font-bold text-lg shadow-xl shadow-white/10 hover:shadow-white/20 hover:bg-slate-50 transform hover:-translate-y-1 transition-all duration-300"
+                    >
+                        Login
+                    </button>
+                    <button
+                        onClick={() => router.push("/signup")}
+                        className="px-10 py-4 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 text-white font-bold text-lg hover:bg-white/10 transform hover:-translate-y-1 transition-all duration-300"
+                    >
+                        Sign Up
+                    </button>
+                </div>
+            )}
+            </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+
+        {isAuthenticated && history.length > 0 && (
+            <div className="w-full max-w-4xl animate-fade-in-up animation-delay-500">
+                <div className="flex items-center justify-between mb-4 px-2">
+                    <h3 className="text-2xl font-bold text-white flex items-center gap-2">
+                        <span className="w-1.5 h-8 bg-purple-500 rounded-full"></span>
+                        History
+                    </h3>
+                    <span className="text-slate-400 text-sm font-medium">{history.length} Attempt{history.length !== 1 ? 's' : ''}</span>
+                </div>
+                
+                <div className="bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-3xl p-1 overflow-hidden shadow-2xl">
+                    <div className="overflow-x-auto max-h-[260px] overflow-y-auto custom-scrollbar rounded-2xl">
+                        <table className="w-full text-left border-collapse">
+                            <thead className="sticky top-0 bg-slate-900/95 backdrop-blur-md z-10 shadow-sm">
+                                <tr className="text-slate-400 text-xs uppercase tracking-wider font-semibold">
+                                    <th className="py-4 pl-6">Date</th>
+                                    <th className="py-4">Score</th>
+                                    <th className="py-4">Accuracy</th>
+                                    <th className="py-4 text-right pr-6">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody className="text-slate-200 divide-y divide-white/5">
+                                {history.map((attempt) => (
+                                    <tr key={attempt.id} className="hover:bg-white/5 transition-colors group">
+                                        <td className="py-4 pl-6 text-sm font-medium">
+                                            {attempt.date ? new Date(attempt.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : new Date().toLocaleDateString()}
+                                            <span className="block text-xs text-slate-500 font-normal mt-0.5">
+                                                {attempt.date ? new Date(attempt.date).toLocaleTimeString(undefined, {hour: '2-digit', minute:'2-digit'}) : ''}
+                                            </span>
+                                        </td>
+                                        <td className="py-4">
+                                            <div className="flex items-baseline gap-1">
+                                                <span className="text-lg font-bold text-white">{attempt.score}</span>
+                                                <span className="text-xs text-slate-500">/ {attempt.totalQuestions}</span>
+                                            </div>
+                                        </td>
+                                        <td className="py-4">
+                                             <div className="w-24 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                                                <div 
+                                                    className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"
+                                                    style={{ width: `${(attempt.score / attempt.totalQuestions) * 100}%` }}
+                                                ></div>
+                                             </div>
+                                             <span className="text-xs text-slate-400 mt-1 block">
+                                                {Math.round((attempt.score / attempt.totalQuestions) * 100)}%
+                                             </span>
+                                        </td>
+                                        <td className="py-4 text-right pr-6">
+                                            <button 
+                                                onClick={() => router.push(`/result?id=${attempt.id}`)}
+                                                className="bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 hover:text-indigo-200 border border-indigo-500/20 px-4 py-1.5 rounded-full text-xs font-semibold transition-all"
+                                            >
+                                                View Report
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        )}
+      </div>
+      
+      <div className="absolute bottom-6 text-xs text-slate-500 font-medium">
+        © 2026 Kaustubh Duse
+      </div>
     </div>
-  );
+  )
 }
