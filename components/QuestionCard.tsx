@@ -19,7 +19,7 @@ export default function QuestionCard({ question, options, selected, onSelect, ca
     }
 
   return (
-    <div className="p-8 h-full flex flex-col">
+    <div className="p-4 md:p-8 h-full flex flex-col">
       {/* Header Tags */}
       <div className="flex flex-wrap gap-2 mb-6">
         <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border ${getDifficultyColor(difficulty)}`}>

@@ -51,45 +51,26 @@ export default function Result() {
         <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-12 text-center relative overflow-hidden shadow-2xl animate-fade-in-up">
             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
             
-            <div className="flex flex-col md:flex-row items-center justify-center gap-12">
-                {/* Score Circle */}
-                <div className="relative w-48 h-48 md:w-56 md:h-56">
-                    <svg className="w-full h-full transform -rotate-90 drop-shadow-lg">
-                        <circle cx="50%" cy="50%" r="45%" stroke="currentColor" strokeWidth="8" className="text-white/10" fill="transparent"/>
-                        <circle cx="50%" cy="50%" r="45%" stroke="currentColor" strokeWidth="8" className="text-purple-500 transition-all duration-1000 ease-out" 
-                            strokeDasharray="283" 
-                            strokeDashoffset={283 - (283 * percentage) / 100}
-                            strokeLinecap="round"
-                            fill="transparent"
-                        />
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="text-6xl md:text-7xl font-black bg-clip-text text-transparent bg-gradient-to-br from-white to-gray-400">
-                            {percentage}%
-                        </span>
-                        <span className="text-sm text-purple-200 font-medium uppercase tracking-wider mt-1">Accuracy</span>
-                    </div>
-                </div>
-
+            <div className="flex flex-col items-center justify-center gap-8">
                 {/* Text Stats */}
-                <div className="text-left space-y-4">
+                <div className="text-center space-y-4">
                     <div className="space-y-1">
                         <h1 className="text-3xl md:text-5xl font-bold text-white">Quiz Completed!</h1>
                         <p className="text-slate-400 text-lg">Great effort! Here is how you performed.</p>
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-4 mt-4">
-                         <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
-                             <div className="text-3xl font-bold text-white mb-1">{displayScore} <span className="text-base text-slate-500 font-normal">/ {totalQuestions}</span></div>
-                             <div className="text-xs text-slate-400 uppercase tracking-wider flex items-center gap-1"><Award size={12}/> Score</div>
+                    <div className="flex gap-4 mt-6 justify-center">
+                         <div className="bg-white/5 p-6 rounded-2xl border border-white/5 min-w-[150px]">
+                             <div className="text-4xl font-bold text-white mb-2">{displayScore} <span className="text-xl text-slate-500 font-normal">/ {totalQuestions}</span></div>
+                             <div className="text-xs text-slate-400 uppercase tracking-wider flex items-center justify-center gap-1"><Award size={14}/> Score</div>
                          </div>
-                         <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
-                             <div className="text-3xl font-bold text-white mb-1">#{totalAttempts}</div>
-                             <div className="text-xs text-slate-400 uppercase tracking-wider flex items-center gap-1"><RotateCcw size={12}/> Attempt</div>
+                         <div className="bg-white/5 p-6 rounded-2xl border border-white/5 min-w-[150px]">
+                             <div className="text-4xl font-bold text-white mb-2">#{totalAttempts}</div>
+                             <div className="text-xs text-slate-400 uppercase tracking-wider flex items-center justify-center gap-1"><RotateCcw size={14}/> Attempt</div>
                          </div>
                     </div>
 
-                    <div className="flex gap-4 mt-6">
+                    <div className="flex gap-4 mt-8 justify-center">
                         <button 
                             onClick={() => router.push("/")}
                             className="bg-white text-slate-900 px-6 py-3 rounded-xl font-bold hover:bg-slate-200 transition-colors flex items-center gap-2 shadow-lg shadow-white/10"

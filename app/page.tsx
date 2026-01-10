@@ -10,7 +10,6 @@ export default function Home() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [history, setHistory] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [hasProgress, setHasProgress] = useState(false)
 
   const getUserFromCookie = () => {
     const match = document.cookie.match(new RegExp('(^| )curr_user=([^;]+)'))
@@ -32,12 +31,8 @@ export default function Home() {
 
   const fetchData = async (email: string) => {
     try {
-        const [histRes, progRes] = await Promise.all([
-            axios.get(`/api/attempts?email=${email}`),
-            axios.get(`/api/progress?email=${email}`)
-        ])
+        const histRes = await axios.get(`/api/attempts?email=${email}`)
         setHistory(histRes.data.history || [])
-        setHasProgress(!progRes.data.empty)
     } catch (e) {
         console.error("Failed to fetch data", e)
     } finally {
@@ -49,7 +44,6 @@ export default function Home() {
     await axios.post("/api/auth/logout")
     setIsAuthenticated(false)
     setHistory([])
-    setHasProgress(false)
     router.push("/login")
   }
 
@@ -57,15 +51,10 @@ export default function Home() {
     router.push("/instructions?fresh=true")
   }
 
-  const handleResume = () => {
-    router.push("/quiz") 
-  }
-
   if (loading) return <LoadingSpinner />
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white flex flex-col items-center p-6 relative overflow-hidden font-sans">
-      {/* Background Ambient Glows */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white flex flex-col items-center p-4 md:p-6 relative overflow-hidden font-sans">
       <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-purple-600/30 rounded-full mix-blend-screen filter blur-[100px] animate-pulse-slow"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-600/30 rounded-full mix-blend-screen filter blur-[100px] animate-pulse-slow animation-delay-2000"></div>
 
@@ -86,45 +75,29 @@ export default function Home() {
         <div className="text-center space-y-8 animate-fade-in-up">
             <div className="inline-block relative">
                  <h1 className="text-6xl md:text-8xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-blue-300 via-purple-300 to-pink-300 drop-shadow-2xl">
-                    Master Your Exam
+                    Quiz by CausalFunnel
                  </h1>
                  <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-purple-500 blur-2xl opacity-20 rounded-full -z-10"></div>
             </div>
             
             <p className="text-xl md:text-2xl text-slate-300 max-w-3xl mx-auto leading-relaxed font-light">
-                Experience a premium environment tailored for success. <br className="hidden md:block"/> Practice with precision, analyze deeply, and conquer your goals.
+                All your attempts are stored here. <br className="hidden md:block"/> You can attempt quiz multiple times
             </p>
             
             <div className="flex flex-col md:flex-row gap-6 justify-center items-center mt-10">
             {isAuthenticated ? (
-                <>
-                    {hasProgress && (
-                        <button
-                            onClick={handleResume}
-                            className="group relative px-8 py-4 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 shadow-2xl shadow-orange-500/30 transform hover:-translate-y-1 hover:scale-105 transition-all duration-300 min-w-[200px] overflow-hidden"
-                        >
-                            <div className="absolute inset-0 bg-white/20 group-hover:bg-white/30 transition-colors"></div>
-                            <div className="relative flex flex-col items-center">
-                                <span className="text-xl font-bold tracking-tight">Resume</span>
-                                <span className="text-xs font-medium text-orange-100 uppercase tracking-wider mt-1">Continue Session</span>
-                            </div>
-                        </button>
-                    )}
-                    
-                    <button
-                        onClick={handleStart}
-                        className={`group relative px-8 py-4 rounded-2xl shadow-2xl transform hover:-translate-y-1 hover:scale-105 transition-all duration-300 min-w-[200px] overflow-hidden ${hasProgress ? "bg-slate-800 border border-slate-700 hover:border-slate-600" : "bg-gradient-to-br from-emerald-500 to-teal-600 shadow-emerald-500/30"}`}
-                    >
-                         {!hasProgress && <div className="absolute inset-0 bg-white/20 group-hover:bg-white/30 transition-colors"></div>}
-                         <div className="relative flex flex-col items-center">
-                            <span className={`text-xl font-bold tracking-tight ${hasProgress ? "text-slate-300 group-hover:text-white" : "text-white"}`}>
-                                {history.length > 0 ? "Re-attempt Test" : "Start Exam"}
-                            </span>
-                            {history.length > 0 && <span className={`text-xs font-medium uppercase tracking-wider mt-1 ${hasProgress ? "text-slate-500 group-hover:text-slate-400" : "text-emerald-100"}`}>Start Fresh</span>}
-                            {hasProgress && <span className="text-xs font-medium text-slate-500 group-hover:text-red-400 mt-1 uppercase tracking-wider transition-colors">Discard Current</span>}
-                         </div>
-                    </button>
-                </>
+                <button
+                    onClick={handleStart}
+                    className="group relative px-8 py-4 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-2xl shadow-emerald-500/30 transform hover:-translate-y-1 hover:scale-105 transition-all duration-300 min-w-[200px] overflow-hidden"
+                >
+                        <div className="absolute inset-0 bg-white/20 group-hover:bg-white/30 transition-colors"></div>
+                        <div className="relative flex flex-col items-center">
+                        <span className="text-xl font-bold tracking-tight text-white">
+                            {history.length > 0 ? "Re-attempt Test" : "Start Exam"}
+                        </span>
+                        {history.length > 0 && <span className="text-xs font-medium uppercase tracking-wider mt-1 text-emerald-100">Start Fresh</span>}
+                        </div>
+                </button>
             ) : (
                 <div className="flex gap-4">
                     <button
@@ -161,7 +134,6 @@ export default function Home() {
                                 <tr className="text-slate-400 text-xs uppercase tracking-wider font-semibold">
                                     <th className="py-4 pl-6">Date</th>
                                     <th className="py-4">Score</th>
-                                    <th className="py-4">Accuracy</th>
                                     <th className="py-4 text-right pr-6">Action</th>
                                 </tr>
                             </thead>
@@ -179,17 +151,6 @@ export default function Home() {
                                                 <span className="text-lg font-bold text-white">{attempt.score}</span>
                                                 <span className="text-xs text-slate-500">/ {attempt.totalQuestions}</span>
                                             </div>
-                                        </td>
-                                        <td className="py-4">
-                                             <div className="w-24 h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                                                <div 
-                                                    className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"
-                                                    style={{ width: `${(attempt.score / attempt.totalQuestions) * 100}%` }}
-                                                ></div>
-                                             </div>
-                                             <span className="text-xs text-slate-400 mt-1 block">
-                                                {Math.round((attempt.score / attempt.totalQuestions) * 100)}%
-                                             </span>
                                         </td>
                                         <td className="py-4 text-right pr-6">
                                             <button 

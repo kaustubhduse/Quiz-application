@@ -6,6 +6,7 @@ import QuestionCard from "@/components/QuestionCard"
 import OverviewPanel from "@/components/OverviewPanel"
 import { useRouter } from "next/navigation"
 import LoadingSpinner from "@/components/LoadingSpinner"
+import { Menu, X } from "lucide-react"
 
 export default function Quiz() {
   const [questions, setQuestions] = useState<any[]>([])
@@ -15,11 +16,8 @@ export default function Quiz() {
   const [marked, setMarked] = useState<Set<number>>(new Set())
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  
-  // User info from Cookie (helper)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [userInfo, setUserInfo] = useState<{username: string, email: string} | null>(null)
-  
-  // Server-synced timer
   const [initialTime, setInitialTime] = useState(1800)
 
   const answersRef = useRef(answers)
@@ -27,11 +25,9 @@ export default function Quiz() {
   const isSubmittedRef = useRef(false)
   const router = useRouter()
 
-  // Sync refs
   useEffect(() => { answersRef.current = answers }, [answers])
   useEffect(() => { questionsRef.current = questions }, [questions])
 
-  // Get User from Public Cookie
   const getUserFromCookie = () => {
     const match = document.cookie.match(new RegExp('(^| )curr_user=([^;]+)'))
     if (match) {
@@ -65,24 +61,20 @@ export default function Quiz() {
 
         const [quizRes, progressRes] = await Promise.all([
             axios.get("/api/quiz"),
-            // Only fetch progress if NOT fresh, or fetch anyway to verify it's gone?
-            // Simpler to just fetch. If we just deleted it, it should be empty.
             axios.get(`/api/progress?email=${user.email}`)
         ])
 
         setQuestions(quizRes.data)
         
         const p = progressRes.data
-        // Only restore if NOT fresh and data exists
         if (p && !p.empty && !isFresh) {
             if (p.answers) setAnswers(p.answers)
             if (p.visited) setVisited(new Set(p.visited))
             if (p.marked) setMarked(new Set(p.marked))
             if (p.index !== undefined) setIndex(p.index)
             if (p.timeRemaining !== undefined) setInitialTime(p.timeRemaining)
-        } else {
-            // Fresh start
-            // answers already init to nulls
+        } 
+        else {
             setVisited(new Set([0]))
         }
 
@@ -105,16 +97,8 @@ export default function Quiz() {
   useEffect(() => {
     fetchQuiz()
 
-    // Cleanup: Auto-submit only if questions loaded
     return () => {
         if (!isSubmittedRef.current && questionsRef.current.length > 0) {
-           // Auto-submit logic typically sends final state.
-           // However, if we are just "pausing" (closing tab), maybe strictly saving progress is better?
-           // The prompt said "auto-submitted and timer stop". 
-           // So we keep the auto-submit strictly.
-           
-           // We need email, which might be lost if we rely on state in cleanup. 
-           // Best to read cookie again strictly or rely on closure if stable.
            const u = getUserFromCookie()
            if (u) {
              const payload = {
@@ -134,32 +118,22 @@ export default function Quiz() {
   }, [])
 
 
-  // Auto-Save Progress (Debounced or on significant changes)
   useEffect(() => {
     if (!userInfo || loading) return
 
     const timerId = setTimeout(() => {
-        // We don't have exact "current time" here from Timer component unless we lift logic up.
-        // For now, we save everything ELSE. Timer saves can be periodic inside Timer or handled by estimation.
-        // To accurately save time, Timer component needs to report it back.
-        // Let's assume Timer handles its own syncing or we skip saving EXACT second count for this simple impl
-        // UNLESS we modify Timer to call "onTick".
-        
-        // Let's just save the core state for now.
         axios.post("/api/progress", {
             email: userInfo.email,
             answers,
             index,
             visited: Array.from(visited),
             marked: Array.from(marked),
-            // timeRemaining: ... (Requires Timer refactor to be perfect, or we trust 'initialTime' - elapsed)
         }).catch(console.error)
-    }, 1000) // Debounce 1s
+    }, 1000)
 
     return () => clearTimeout(timerId)
   }, [answers, index, visited, marked, userInfo])
-
-  // Mark visited
+  
   useEffect(() => {
     setVisited((prev) => new Set(prev).add(index))
   }, [index])
@@ -189,7 +163,7 @@ export default function Quiz() {
   const submit = async () => {
     if (isSubmittedRef.current || !userInfo) return;
     isSubmittedRef.current = true;
-    setLoading(true) // Show spinner explicitly during submit
+    setLoading(true) 
     
     try {
         const res = await axios.post("/api/submit", {
@@ -197,10 +171,9 @@ export default function Quiz() {
             questions: questions,
             answers: answers,
         })
-        // Clear progress on finish
-        // Optional: await axios.delete(`/api/progress?email=${userInfo.email}`)
         router.push(`/result?id=${res.data.id}`)
-    } catch (e) {
+    } 
+    catch (e) {
         console.error(e)
         alert("Failed to submit. Please try again.")
         isSubmittedRef.current = false;
@@ -213,49 +186,90 @@ export default function Quiz() {
   if (!questions.length) return null
 
   return (
-    <div className="h-screen flex flex-col bg-white overflow-hidden">
-        <div className="bg-black text-white p-2 px-4 flex justify-between items-center h-14 shrink-0">
-            <h1 className="font-bold text-lg">Premium Mock Test 2026</h1>
-            <div className="flex items-center gap-4">
-                 <span className="text-sm hidden md:inline">Time Left:</span>
-                 <div className="bg-gray-800 px-3 py-1 rounded text-green-400 font-mono font-bold text-lg">
+    <div className="h-screen flex flex-col bg-white overflow-hidden font-sans">
+        <div className="bg-slate-900 text-white p-2 px-4 flex justify-between items-center h-16 shrink-0 z-30 shadow-md">
+            <div className="flex items-center gap-3">
+                 <button 
+                    onClick={() => setIsSidebarOpen(true)}
+                    className="md:hidden p-2 hover:bg-white/10 rounded-full transition-colors"
+                 >
+                    <Menu size={24} />
+                 </button>
+                 <h1 className="font-bold text-base md:text-lg leading-tight">
+                    <span className="hidden md:inline">Premium Mock Test 2026</span>
+                    <span className="md:hidden">Mock Test 2026</span>
+                 </h1>
+            </div>
+            
+            <div className="flex items-center gap-3 md:gap-4">
+                 <span className="text-sm hidden md:inline text-slate-400 font-medium">Time Left:</span>
+                 <div className="bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-lg text-emerald-400 font-mono font-bold text-lg shadow-inner">
                     <Timer initialTime={initialTime} onEnd={submit} /> 
                  </div>
             </div>
         </div>
 
-        <div className="flex flex-1 overflow-hidden">
-            <div className="flex-1 flex flex-col overflow-hidden relative">
-                 <div className="flex-1 overflow-y-auto">
+        <div className="flex flex-1 overflow-hidden relative">
+            <div className="flex-1 flex flex-col overflow-hidden relative w-full">
+                 <div className="flex-1 overflow-y-auto bg-slate-50">
                     <QuestionCard
                         {...questions[index]}
                         selected={answers[index]}
                         onSelect={handleOptionSelect}
                     />
                  </div>
-                 <div className="h-16 border-t bg-gray-50 flex items-center justify-between px-4 shrink-0 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
-                    <div className="flex gap-2">
-                        <button onClick={handleMarkForReviewNext} className="bg-white border hover:bg-gray-100 text-gray-700 font-medium py-2 px-4 rounded-full text-sm border-gray-300">Mark for Review & Next</button>
-                        <button onClick={handleClearResponse} className="bg-white border hover:bg-gray-100 text-gray-700 font-medium py-2 px-4 rounded-full text-sm border-gray-300">Clear Response</button>
+                 <div className="z-20 border-t border-slate-200 bg-white p-3 md:px-6 md:py-4 shrink-0 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] flex flex-col md:flex-row gap-3 md:gap-0 items-center justify-between">
+                    <div className="flex gap-2 w-full md:w-auto">
+                        <button onClick={handleMarkForReviewNext} className="flex-1 md:flex-none bg-white border-2 border-slate-200 hover:border-purple-300 text-slate-600 hover:text-purple-600 font-bold py-2.5 px-4 rounded-xl text-xs md:text-sm transition-all whitespace-nowrap">
+                            Mark for Review
+                        </button>
+                        <button onClick={handleClearResponse} className="flex-1 md:flex-none bg-white border-2 border-slate-200 hover:border-slate-300 text-slate-500 hover:text-slate-700 font-bold py-2.5 px-4 rounded-xl text-xs md:text-sm transition-all">
+                            Clear
+                        </button>
                     </div>
                     <button 
                         onClick={() => index === questions.length - 1 ? submit() : handleSaveAndNext()}
-                        className={`font-bold py-2 px-6 rounded text-sm ${index === questions.length - 1 ? "bg-green-600 text-white hover:bg-green-700" : "bg-blue-600 text-white hover:bg-blue-700"}`}
+                        className={`w-full md:w-auto font-bold py-3 px-8 rounded-xl text-sm shadow-lg transform active:scale-95 transition-all ${index === questions.length - 1 ? "bg-green-600 text-white hover:bg-green-700 shadow-green-500/30" : "bg-blue-600 text-white hover:bg-blue-700 shadow-blue-500/30"}`}
                     >
                          {index === questions.length - 1 ? "Submit Test" : "Save & Next"}
                     </button>
                  </div>
             </div>
 
-            <div className="w-[30%] max-w-[350px] border-l border-gray-300 h-full overflow-hidden bg-blue-50">
-                <OverviewPanel 
-                    answers={answers} 
-                    setIndex={setIndex} 
-                    visited={visited} 
-                    marked={marked}
-                    currentIndex={index}
-                    username={userInfo?.username || "Candidate"}
+            {isSidebarOpen && (
+                <div 
+                    className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-sm"
+                    onClick={() => setIsSidebarOpen(false)}
                 />
+            )}
+
+            <div className={`
+                fixed inset-y-0 right-0 z-50 w-[85%] max-w-[320px] bg-white shadow-2xl transform transition-transform duration-300 ease-in-out
+                md:relative md:transform-none md:w-[30%] md:max-w-[350px] md:border-l md:border-slate-200 md:shadow-none
+                ${isSidebarOpen ? "translate-x-0" : "translate-x-full md:translate-x-0"}
+            `}>
+                <div className="h-full flex flex-col">
+                    <div className="md:hidden p-4 border-b border-gray-100 flex justify-between items-center bg-slate-50">
+                        <span className="font-bold text-slate-800">Question Palette</span>
+                        <button onClick={() => setIsSidebarOpen(false)} className="p-2 hover:bg-slate-200 rounded-full text-slate-500">
+                            <X size={20} />
+                        </button>
+                    </div>
+                    
+                    <div className="flex-1 overflow-hidden">
+                        <OverviewPanel 
+                            answers={answers} 
+                            setIndex={(i) => {
+                                setIndex(i)
+                                setIsSidebarOpen(false)
+                            }}
+                            visited={visited} 
+                            marked={marked}
+                            currentIndex={index}
+                            username={userInfo?.username || "Candidate"}
+                        />
+                    </div>
+                </div>
             </div>
         </div>
     </div>

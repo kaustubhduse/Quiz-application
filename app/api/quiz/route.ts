@@ -2,15 +2,11 @@ import { NextResponse } from "next/server"
 import axios from "axios"
 import { shuffle } from "@/lib/shuffle"
 
-// Use global variable to persist cache across hot-reloads in dev
 declare global {
-    // eslint-disable-next-line no-var
     var _quizCache: { data: any; time: number } | undefined;
 }
 
-const CACHE_DURATION = 30 * 1000 // 30 seconds to be safe (API limit is 1 per 5s)
-
-// Fallback data in case API is completely blocked
+const CACHE_DURATION = 30 * 1000
 const FALLBACK_QUESTIONS = [
     {
         question: "What is the capital of France?",
@@ -47,7 +43,6 @@ const FALLBACK_QUESTIONS = [
         category: "Computer Science",
         difficulty: "hard"
     }
-    // We can add more if needed, but this prevents the 'crash'
 ];
 
 export async function GET() {
