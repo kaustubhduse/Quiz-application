@@ -17,9 +17,9 @@ export default function Instructions() {
 
   return (
     <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center p-4 font-sans">
-      <div className="max-w-2xl w-full bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
+      <div className="max-w-2xl w-full bg-white rounded-3xl overflow-hidden flex flex-col md:flex-row">
          <div className="flex-1 p-8 md:p-10 text-slate-800">
-            <h1 className="text-3xl font-extrabold mb-2 text-slate-900">Quiz Instructions</h1>
+            <h1 className="text-3xl font-bold mb-2 text-slate-900">Quiz Instructions</h1>
             <p className="text-slate-500 mb-8 font-medium">Please read carefully before proceeding.</p>
 
             <ul className="space-y-4 mb-10">
@@ -55,7 +55,7 @@ export default function Instructions() {
                 <button
                     onClick={handleStart}
                     disabled={!accepted}
-                    className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:-translate-y-1 shadow-xl shadow-slate-900/10"
+                    className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                     Start Examination
                     <ChevronRight size={20} />

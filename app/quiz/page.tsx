@@ -44,24 +44,20 @@ function QuizContent() {
         <div className="flex flex-1 overflow-hidden relative">
             <div className="flex-1 flex flex-col overflow-hidden relative w-full">
                  <div className="flex-1 overflow-y-auto bg-slate-50">
-                    <QuestionCard
-                        {...questions[index]}
-                        selected={answers[index]}
-                        onSelect={handleOptionSelect}
-                    />
+                    <QuestionCard />
                  </div>
-                 <div className="z-20 border-t border-slate-200 bg-white p-3 md:px-6 md:py-4 shrink-0 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] flex flex-col md:flex-row gap-3 md:gap-0 items-center justify-between">
+                 <div className="z-20 border-t border-slate-200 bg-white p-3 md:px-6 md:py-4 shrink-0 flex flex-col md:flex-row gap-3 md:gap-0 items-center justify-between">
                     <div className="flex gap-2 w-full md:w-auto">
-                        <button onClick={handleMarkForReviewNext} className="flex-1 md:flex-none bg-white border-2 border-slate-200 hover:border-purple-300 text-slate-600 hover:text-purple-600 font-bold py-2.5 px-4 rounded-xl text-xs md:text-sm transition-all whitespace-nowrap">
+                        <button onClick={handleMarkForReviewNext} className="flex-1 md:flex-none bg-white border border-slate-300 hover:bg-slate-50 text-slate-600 font-semibold py-2.5 px-4 rounded-xl text-xs md:text-sm transition-colors whitespace-nowrap">
                             Mark for Review
                         </button>
-                        <button onClick={handleClearResponse} className="flex-1 md:flex-none bg-white border-2 border-slate-200 hover:border-slate-300 text-slate-500 hover:text-slate-700 font-bold py-2.5 px-4 rounded-xl text-xs md:text-sm transition-all">
+                        <button onClick={handleClearResponse} className="flex-1 md:flex-none bg-white border border-slate-300 hover:bg-slate-50 text-slate-600 font-semibold py-2.5 px-4 rounded-xl text-xs md:text-sm transition-colors">
                             Clear
                         </button>
                     </div>
                     <button 
                         onClick={() => index === questions.length - 1 ? submit() : handleSaveAndNext()}
-                        className={`w-full md:w-auto font-bold py-3 px-8 rounded-xl text-sm shadow-lg transform active:scale-95 transition-all ${index === questions.length - 1 ? "bg-green-600 text-white hover:bg-green-700 shadow-green-500/30" : "bg-blue-600 text-white hover:bg-blue-700 shadow-blue-500/30"}`}
+                        className={`w-full md:w-auto font-bold py-3 px-8 rounded-xl text-sm transition-colors ${index === questions.length - 1 ? "bg-green-600 text-white hover:bg-green-700" : "bg-blue-600 text-white hover:bg-blue-700"}`}
                     >
                          {index === questions.length - 1 ? "Submit Test" : "Save & Next"}
                     </button>

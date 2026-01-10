@@ -42,17 +42,9 @@ export default function Result() {
 
   return (
     <div className="min-h-screen bg-slate-900 text-white font-sans p-6 overflow-hidden relative">
-       {/* Background Ambient Glows */}
-       <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-purple-600/30 rounded-full mix-blend-screen filter blur-[100px] animate-pulse-slow"></div>
-       <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-600/30 rounded-full mix-blend-screen filter blur-[100px] animate-pulse-slow animation-delay-2000"></div>
-
       <div className="max-w-5xl mx-auto relative z-10 space-y-8 pb-12">
-        {/* Header Summary Card */}
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-12 text-center relative overflow-hidden shadow-2xl animate-fade-in-up">
-            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
-            
+        <div className="bg-slate-800/50 border border-slate-700 rounded-3xl p-8 md:p-12 text-center relative overflow-hidden">
             <div className="flex flex-col items-center justify-center gap-8">
-                {/* Text Stats */}
                 <div className="text-center space-y-4">
                     <div className="space-y-1">
                         <h1 className="text-3xl md:text-5xl font-bold text-white">Quiz Completed!</h1>
@@ -60,11 +52,11 @@ export default function Result() {
                     </div>
                     
                     <div className="flex gap-4 mt-6 justify-center">
-                         <div className="bg-white/5 p-6 rounded-2xl border border-white/5 min-w-[150px]">
+                         <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-700 min-w-[150px]">
                              <div className="text-4xl font-bold text-white mb-2">{displayScore} <span className="text-xl text-slate-500 font-normal">/ {totalQuestions}</span></div>
                              <div className="text-xs text-slate-400 uppercase tracking-wider flex items-center justify-center gap-1"><Award size={14}/> Score</div>
                          </div>
-                         <div className="bg-white/5 p-6 rounded-2xl border border-white/5 min-w-[150px]">
+                         <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-700 min-w-[150px]">
                              <div className="text-4xl font-bold text-white mb-2">#{totalAttempts}</div>
                              <div className="text-xs text-slate-400 uppercase tracking-wider flex items-center justify-center gap-1"><RotateCcw size={14}/> Attempt</div>
                          </div>
@@ -73,14 +65,14 @@ export default function Result() {
                     <div className="flex gap-4 mt-8 justify-center">
                         <button 
                             onClick={() => router.push("/")}
-                            className="bg-white text-slate-900 px-6 py-3 rounded-xl font-bold hover:bg-slate-200 transition-colors flex items-center gap-2 shadow-lg shadow-white/10"
+                            className="bg-white text-slate-900 px-6 py-3 rounded-xl font-bold hover:bg-slate-200 transition-colors flex items-center gap-2"
                         >
                             <Home size={18} />
                             Return Home
                         </button>
                          <button 
                             onClick={() => router.push("/instructions?fresh=true")}
-                            className="bg-purple-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-purple-500 transition-colors flex items-center gap-2 shadow-lg shadow-purple-600/20 border border-purple-500"
+                            className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-500 transition-colors flex items-center gap-2 border border-blue-500"
                         >
                             <RotateCcw size={18} />
                             Re-attempt
@@ -93,9 +85,9 @@ export default function Result() {
         {/* Detailed Analysis */}
         <div className="space-y-4 max-w-4xl mx-auto animate-fade-in-up animation-delay-500">
           <div className="flex items-center gap-4 px-4">
-               <div className="h-px bg-white/10 flex-1"></div>
-               <span className="text-slate-400 uppercase tracking-widest text-sm font-bold">Detailed Analysis</span>
-               <div className="h-px bg-white/10 flex-1"></div>
+               <div className="h-px bg-slate-800 flex-1"></div>
+               <span className="text-slate-500 uppercase tracking-widest text-sm font-bold">Detailed Analysis</span>
+               <div className="h-px bg-slate-800 flex-1"></div>
           </div>
 
           {questions.map((q: any, i: number) => {
@@ -103,30 +95,30 @@ export default function Result() {
             const isCorrect = userAnswer === q.correctAnswer
             const isSkipped = userAnswer === null
 
-            let statusIcon = <MinusCircle size={20} className="text-slate-400" />
-            let statusColor = "border-slate-700 bg-slate-800/50"
-            let textColor = "text-slate-400"
+            let statusIcon = <MinusCircle size={20} className="text-slate-500" />
+            let statusColor = "border-slate-800 bg-slate-900/50"
+            let textColor = "text-slate-500"
             let badgeText = "Skipped"
 
             if (!isSkipped) {
                 if (isCorrect) {
-                    statusIcon = <CheckCircle2 size={20} className="text-green-400" />
-                    statusColor = "border-green-500/30 bg-green-500/10"
-                    textColor = "text-green-400"
+                    statusIcon = <CheckCircle2 size={20} className="text-green-500" />
+                    statusColor = "border-green-900/30 bg-green-900/10"
+                    textColor = "text-green-500"
                     badgeText = "Correct"
                 } else {
-                    statusIcon = <XCircle size={20} className="text-red-400" />
-                    statusColor = "border-red-500/30 bg-red-500/10"
-                    textColor = "text-red-400"
+                    statusIcon = <XCircle size={20} className="text-red-500" />
+                    statusColor = "border-red-900/30 bg-red-900/10"
+                    textColor = "text-red-500"
                     badgeText = "Incorrect"
                 }
             }
 
             return (
-              <div key={i} className={`p-6 rounded-2xl border ${statusColor} backdrop-blur-sm transition-all hover:bg-white/5`}>
+              <div key={i} className={`p-6 rounded-2xl border ${statusColor} transition-colors`}>
                 <div className="flex justify-between items-start mb-4">
                     <span className="font-bold text-slate-500 text-sm uppercase tracking-wide">Question {i + 1}</span>
-                    <span className={`text-xs px-3 py-1 rounded-full font-bold uppercase flex items-center gap-1.5 border border-white/5 ${textColor} bg-white/5`}>
+                    <span className={`text-xs px-3 py-1 rounded-full font-bold uppercase flex items-center gap-1.5 border border-white/5 ${textColor} bg-slate-800`}>
                         {statusIcon}
                         {badgeText}
                     </span>

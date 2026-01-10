@@ -1,14 +1,15 @@
+import { useQuiz } from "@/context/QuizContext"
 
-interface QuestionCardProps {
-    question: string
-    options: string[]
-    selected?: string | null
-    onSelect: (answer: string) => void
-    category: string
-    difficulty: string
-}
+export default function QuestionCard() {
+    const { questions, index, answers, handleOptionSelect } = useQuiz()
+    const currentQuestion = questions[index]
+    
+    if (!currentQuestion) return null
 
-export default function QuestionCard({ question, options, selected, onSelect, category, difficulty }: QuestionCardProps) {
+    const { question, options, category, difficulty } = currentQuestion
+    const selected = answers[index]
+    const onSelect = handleOptionSelect
+
     const getDifficultyColor = (diff: string) => {
         switch(diff?.toLowerCase()) {
             case 'easy': return 'bg-green-100 text-green-700 border-green-200'
@@ -37,22 +38,22 @@ export default function QuestionCard({ question, options, selected, onSelect, ca
 
       {/* Options */}
       <div className="space-y-3 flex-1 overflow-y-auto pr-2 custom-scrollbar">
-        {options?.map((ans, i) => (
+        {options?.map((ans: string, i: number) => (
             <button
                 key={i}
                 onClick={() => onSelect(ans)}
-                className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 flex items-center gap-4 group hover:shadow-md
+                className={`w-full text-left p-4 rounded-xl border transition-colors flex items-center gap-4
                 ${selected === ans 
-                    ? "border-blue-500 bg-blue-50/50" 
-                    : "border-gray-100 bg-white hover:border-blue-300 hover:bg-blue-50/30"
+                    ? "border-blue-500 bg-blue-50" 
+                    : "border-slate-200 hover:bg-slate-50"
                 }`}
             >
-                <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors font-bold text-sm
-                    ${selected === ans ? "border-blue-500 bg-blue-500 text-white" : "border-gray-300 text-gray-400 group-hover:border-blue-400 group-hover:text-blue-500"}
+                <div className={`w-8 h-8 rounded-full border flex items-center justify-center shrink-0 text-sm font-bold
+                    ${selected === ans ? "border-blue-500 bg-blue-500 text-white" : "border-slate-300 text-slate-500"}
                 `}>
                     {String.fromCharCode(65 + i)}
                 </div>
-                <span className={`text-base md:text-lg ${selected === ans ? "text-blue-900 font-medium" : "text-slate-600"}`} dangerouslySetInnerHTML={{ __html: ans }} />
+                <span className={`text-base md:text-lg ${selected === ans ? "text-blue-900 font-medium" : "text-slate-700"}`} dangerouslySetInnerHTML={{ __html: ans }} />
             </button>
         ))}
       </div>
