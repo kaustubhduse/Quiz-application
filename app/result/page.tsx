@@ -1,11 +1,10 @@
-"use client"
 import LoadingSpinner from "@/components/LoadingSpinner"
-import { useEffect, useState } from "react"
+import { useEffect, useState, Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import axios from "axios"
 import { CheckCircle2, XCircle, MinusCircle, Home, RotateCcw, Award } from "lucide-react"
 
-export default function Result() {
+function ResultContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const id = searchParams.get("id")
@@ -38,7 +37,6 @@ export default function Result() {
   
   const displayScore = score !== undefined ? score : 0
   const totalQuestions = questions?.length || 15
-  const percentage = Math.round((displayScore / totalQuestions) * 100)
 
   return (
     <div className="min-h-screen bg-slate-900 text-white font-sans p-6 overflow-hidden relative">
@@ -145,4 +143,12 @@ export default function Result() {
       </div>
     </div>
   )
+}
+
+export default function Result() {
+    return (
+        <Suspense fallback={<LoadingSpinner />}>
+            <ResultContent />
+        </Suspense>
+    )
 }
