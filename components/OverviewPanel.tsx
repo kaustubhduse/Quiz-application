@@ -1,13 +1,10 @@
 import { User, Circle, CheckCircle2, AlertCircle, HelpCircle } from "lucide-react";
+import { useQuiz } from "@/context/QuizContext";
 
-export default function OverviewPanel({answers, setIndex, visited, marked, currentIndex, username}: {
-  answers: any[];
-  setIndex: (i: number) => void;
-  visited: Set<number>;
-  marked: Set<number>;
-  currentIndex: number;
-  username: string;
-}){
+export default function OverviewPanel() {
+  const { answers, setIndex, visited, marked, index: currentIndex, userInfo, setIsSidebarOpen } = useQuiz();
+  const username = userInfo?.username || "Candidate";
+
   const answeredCount = answers.filter((a) => a !== null).length;
   const notAnsweredCount = visited.size - answeredCount; 
   const notVisitedCount = 15 - visited.size;
@@ -16,7 +13,6 @@ export default function OverviewPanel({answers, setIndex, visited, marked, curre
 
   return (
     <div className="bg-white h-full flex flex-col font-sans">
-      {/* Profile Section */}
       <div className="p-6 border-b border-gray-100 bg-slate-50 flex items-center gap-4">
         <div className="bg-blue-100 p-3 rounded-full shadow-sm text-blue-600">
             <User size={24} />
@@ -27,7 +23,6 @@ export default function OverviewPanel({answers, setIndex, visited, marked, curre
         </div>
       </div>
 
-      {/* Legend / Stats */}
       <div className="p-6 grid grid-cols-2 gap-4 text-xs border-b border-gray-100">
         <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl border border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-gray-400 shadow-sm shrink-0">
@@ -67,12 +62,10 @@ export default function OverviewPanel({answers, setIndex, visited, marked, curre
         </div>
       </div>
 
-      {/* Question Grid header */}
       <div className="px-6 py-4 bg-slate-50 border-b border-gray-100">
         <h3 className="font-bold text-slate-800 text-sm uppercase tracking-wider">Question Palette</h3>
       </div>
 
-      {/* Scrollable Questions */}
       <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
         <div className="grid grid-cols-4 gap-3">
           {answers.map((a: any, i: number) => {
@@ -100,7 +93,10 @@ export default function OverviewPanel({answers, setIndex, visited, marked, curre
             return (
               <button
                 key={i}
-                onClick={() => setIndex(i)}
+                onClick={() => {
+                    setIndex(i);
+                    setIsSidebarOpen(false);
+                }}
                 className={`
                     relative w-12 h-12 rounded-2xl flex items-center justify-center text-sm font-bold transition-all duration-200
                     ${btnClass}
