@@ -11,6 +11,16 @@
 ## Live Demo
 [Access Live Application](https://quiz-application-psi-eosin.vercel.app/)
 
+## Screenshots
+
+![Home Page](public/quizapp-1.png)
+
+![Quiz Interface](public/quizapp-2.png)
+
+![Question Palette](public/quizapp-3.png)
+
+![Result Analysis](public/quizapp-4.png)
+
 ## Description
 A comprehensive full-stack quiz application designed to provide a quiz experience. The application features a secure user authentication system, a responsive test interface with timer functionality, and detailed performance analysis. 
 Participants can attempt the quiz multiple times; every single attempt is individually stored and retrievable.
@@ -72,14 +82,4 @@ npm start
 - `context/`: React Context for global state management (QuizContext).
 - `lib/`: Utility functions and database connection helpers.
 - `types/`: TypeScript definitions.
-
-## Screenshots
-
-![Home Page](public/quizapp-1.png)
-
-![Quiz Interface](public/quizapp-2.png)
-
-![Question Palette](public/quizapp-3.png)
-
-![Result Analysis](public/quizapp-4.png)
 
