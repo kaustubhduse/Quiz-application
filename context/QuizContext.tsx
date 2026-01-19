@@ -1,5 +1,5 @@
 "use client"
-import React, { createContext, useContext, useEffect, useState, useRef, ReactNode } from "react"
+import React, { createContext, useContext, useEffect, useState, useRef, ReactNode, useCallback } from "react"
 import axios from "axios"
 import { useRouter } from "next/navigation"
 
@@ -154,28 +154,28 @@ export function QuizProvider({ children }: { children: ReactNode }) {
         setVisited((prev) => new Set(prev).add(index))
     }, [index])
 
-    const handleOptionSelect = (opt: string) => {
+    const handleOptionSelect = useCallback((opt: string) => {
         const copy = [...answers]
         copy[index] = opt
         setAnswers(copy)
-    }
+    }, [answers, index])
 
-    const handleSaveAndNext = () => {
+    const handleSaveAndNext = useCallback(() => {
         if (index < questions.length - 1) setIndex(i => i + 1)
-    }
+    }, [index, questions.length])
 
-    const handleClearResponse = () => {
+    const handleClearResponse = useCallback(() => {
         const copy = [...answers]
         copy[index] = null
         setAnswers(copy)
-    }
+    }, [answers, index])
 
-    const handleMarkForReviewNext = () => {
+    const handleMarkForReviewNext = useCallback(() => {
         setMarked((prev) => new Set(prev).add(index))
         if (index < questions.length - 1) setIndex(i => i + 1)
-    }
+    }, [index, questions.length])
 
-    const submit = async () => {
+    const submit = useCallback(async () => {
         if (isSubmittedRef.current || !userInfo) return;
         isSubmittedRef.current = true;
         setLoading(true) 
@@ -194,7 +194,7 @@ export function QuizProvider({ children }: { children: ReactNode }) {
             isSubmittedRef.current = false;
             setLoading(false)
         }
-    }
+    }, [userInfo, questions, answers, router])
 
     return (
         <QuizContext.Provider value={{

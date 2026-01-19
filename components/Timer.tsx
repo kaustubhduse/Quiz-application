@@ -1,7 +1,7 @@
 "use client"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback, memo } from "react"
 
-export default function Timer({ onEnd, initialTime = 1800 }: { onEnd: () => void, initialTime?: number }) {
+function Timer({ onEnd, initialTime = 1800 }: { onEnd: () => void, initialTime?: number }) {
   const [time, setTime] = useState(initialTime)
 
   useEffect(() => {
@@ -23,11 +23,13 @@ export default function Timer({ onEnd, initialTime = 1800 }: { onEnd: () => void
     return () => clearInterval(timer)
   }, [onEnd])
 
-  const formatTime = (seconds: number) => {
+  const formatTime = useCallback((seconds: number) => {
     const m = Math.floor(seconds / 60)
     const s = seconds % 60
     return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`
-  }
+  }, [])
 
   return <div>{formatTime(time)}</div>
 }
+
+export default memo(Timer)

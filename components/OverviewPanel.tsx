@@ -1,15 +1,20 @@
 import { User, Circle, CheckCircle2, AlertCircle, HelpCircle } from "lucide-react";
 import { useQuiz } from "@/context/QuizContext";
+import { memo, useMemo } from "react";
 
-export default function OverviewPanel() {
+function OverviewPanel() {
   const { answers, setIndex, visited, marked, index: currentIndex, userInfo, setIsSidebarOpen } = useQuiz();
   const username = userInfo?.username || "Candidate";
 
-  const answeredCount = answers.filter((a) => a !== null).length;
-  const notAnsweredCount = visited.size - answeredCount; 
-  const notVisitedCount = 15 - visited.size;
-  const markedCount = marked.size;
-  const markedAndAnsweredCount = answers.filter((a, i) => a !== null && marked.has(i)).length;
+  const stats = useMemo(() => {
+    const answeredCount = answers.filter((a) => a !== null).length;
+    const notAnsweredCount = visited.size - answeredCount;
+    const notVisitedCount = 15 - visited.size;
+    const markedCount = marked.size;
+    const markedAndAnsweredCount = answers.filter((a, i) => a !== null && marked.has(i)).length;
+    
+    return { answeredCount, notAnsweredCount, notVisitedCount, markedCount, markedAndAnsweredCount };
+  }, [answers, visited, marked]);
 
   return (
     <div className="bg-white h-full flex flex-col font-sans">
@@ -29,7 +34,7 @@ export default function OverviewPanel() {
                 <Circle size={18} />
             </div>
             <div className="flex flex-col">
-                <span className="font-bold text-lg text-slate-700 leading-none">{notVisitedCount}</span>
+                <span className="font-bold text-lg text-slate-700 leading-none">{stats.notVisitedCount}</span>
                 <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wide mt-1">Not Visited</span>
             </div>
         </div>
@@ -38,7 +43,7 @@ export default function OverviewPanel() {
                 <AlertCircle size={18} />
             </div>
             <div className="flex flex-col">
-                <span className="font-bold text-lg text-slate-700 leading-none">{notAnsweredCount}</span>
+                <span className="font-bold text-lg text-slate-700 leading-none">{stats.notAnsweredCount}</span>
                 <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wide mt-1">Not Answered</span>
             </div>
         </div>
@@ -47,18 +52,18 @@ export default function OverviewPanel() {
                 <CheckCircle2 size={18} />
             </div>
              <div className="flex flex-col">
-                <span className="font-bold text-lg text-slate-700 leading-none">{answeredCount}</span>
+                <span className="font-bold text-lg text-slate-700 leading-none">{stats.answeredCount}</span>
                 <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wide mt-1">Answered</span>
-            </div>
+             </div>
         </div>
         <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-purple-100/50 text-purple-500 border border-purple-200 flex items-center justify-center shadow-sm shrink-0">
                 <HelpCircle size={18} />
             </div>
             <div className="flex flex-col">
-                <span className="font-bold text-lg text-slate-700 leading-none">{markedCount}</span>
+                <span className="font-bold text-lg text-slate-700 leading-none">{stats.markedCount}</span>
                 <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wide mt-1">Marked</span>
-            </div>
+             </div>
         </div>
       </div>
 
@@ -119,3 +124,5 @@ export default function OverviewPanel() {
     </div>
   );
 }
+
+export default memo(OverviewPanel)

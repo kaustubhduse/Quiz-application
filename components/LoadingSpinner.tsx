@@ -1,4 +1,6 @@
-export default function LoadingSpinner({ fullScreen = true }: { fullScreen?: boolean }) {
+import { memo } from "react"
+
+function LoadingSpinner({ fullScreen = true }: { fullScreen?: boolean }) {
   if (fullScreen) {
     return (
       <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
@@ -13,3 +15,5 @@ export default function LoadingSpinner({ fullScreen = true }: { fullScreen?: boo
     </div>
   )
 }
+
+export default memo(LoadingSpinner)

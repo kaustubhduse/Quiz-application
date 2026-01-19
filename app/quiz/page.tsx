@@ -1,10 +1,15 @@
 "use client"
 import Timer from "@/components/Timer"
 import QuestionCard from "@/components/QuestionCard"
-import OverviewPanel from "@/components/OverviewPanel"
 import LoadingSpinner from "@/components/LoadingSpinner"
 import { Menu, X } from "lucide-react"
 import { QuizProvider, useQuiz } from "@/context/QuizContext"
+import dynamic from "next/dynamic"
+
+const OverviewPanel = dynamic(() => import("@/components/OverviewPanel"), {
+  ssr: false,
+  loading: () => <div className="flex items-center justify-center h-full"><LoadingSpinner fullScreen={false} /></div>
+})
 
 function QuizContent() {
   const { 

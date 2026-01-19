@@ -1,6 +1,7 @@
 import { useQuiz } from "@/context/QuizContext"
+import { memo, useCallback } from "react"
 
-export default function QuestionCard() {
+function QuestionCard() {
     const { questions, index, answers, handleOptionSelect } = useQuiz()
     const currentQuestion = questions[index]
     
@@ -10,14 +11,14 @@ export default function QuestionCard() {
     const selected = answers[index]
     const onSelect = handleOptionSelect
 
-    const getDifficultyColor = (diff: string) => {
+    const getDifficultyColor = useCallback((diff: string) => {
         switch(diff?.toLowerCase()) {
             case 'easy': return 'bg-green-100 text-green-700 border-green-200'
             case 'medium': return 'bg-yellow-100 text-yellow-700 border-yellow-200'
             case 'hard': return 'bg-red-100 text-red-700 border-red-200'
             default: return 'bg-gray-100 text-gray-700'
         }
-    }
+    }, [])
 
   return (
     <div className="p-4 md:p-8 h-full flex flex-col">
@@ -60,3 +61,5 @@ export default function QuestionCard() {
     </div>
   )
 }
+
+export default memo(QuestionCard)
