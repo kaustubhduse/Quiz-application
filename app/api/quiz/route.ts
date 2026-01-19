@@ -54,7 +54,8 @@ export async function GET() {
     }
 
     if(global._quizCache.data && (now - global._quizCache.time < CACHE_DURATION)){
-        return NextResponse.json(global._quizCache.data)
+        const shuffledQuestions = shuffle([...global._quizCache.data])
+        return NextResponse.json(shuffledQuestions)
     }
 
     try {
@@ -74,13 +75,15 @@ export async function GET() {
         }))
 
         global._quizCache = { data: questions, time: now }
-        return NextResponse.json(questions)
+        const shuffledQuestions = shuffle([...questions])
+        return NextResponse.json(shuffledQuestions)
 
     } 
     catch (apiError: any){
         if(global._quizCache.data){
              console.warn("API failed, serving stale cache", apiError.message)
-             return NextResponse.json(global._quizCache.data)
+             const shuffledQuestions = shuffle([...global._quizCache.data])
+             return NextResponse.json(shuffledQuestions)
         }
         console.warn("API failed and no cache, serving fallback", apiError.message)
         const fallbackQuestions = FALLBACK_QUESTIONS.map((q: any) => ({
@@ -90,7 +93,8 @@ export async function GET() {
             category: q.category,
             difficulty: q.difficulty
         }))
-        return NextResponse.json(fallbackQuestions)
+        const shuffledFallback = shuffle([...fallbackQuestions])
+        return NextResponse.json(shuffledFallback)
     }
   } 
   catch (error: any){
