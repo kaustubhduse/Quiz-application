@@ -14,6 +14,7 @@ interface QuizContextType {
     isSidebarOpen: boolean
     userInfo: { username: string; email: string } | null
     initialTime: number
+    handleTimeUpdate: (time: number) => void
     setIndex: (i: number | ((prev: number) => number)) => void
     setIsSidebarOpen: (v: boolean) => void
     handleOptionSelect: (opt: string) => void
@@ -36,6 +37,7 @@ export function QuizProvider({ children }: { children: ReactNode }) {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false)
     const [userInfo, setUserInfo] = useState<{username: string, email: string} | null>(null)
     const [initialTime, setInitialTime] = useState(1800)
+    const [startTime, setStartTime] = useState<number>(Date.now())
 
     const answersRef = useRef(answers)
     const questionsRef = useRef(questions)
@@ -65,17 +67,10 @@ export function QuizProvider({ children }: { children: ReactNode }) {
         }
         setUserInfo(user)
 
-        const params = new URLSearchParams(window.location.search)
-        const isFresh = params.get("fresh") === "true"
-
         setLoading(true)
         setError(null)
 
         try {
-            if (isFresh) {
-                await axios.delete(`/api/progress?email=${user.email}`)
-            }
-
             const [quizRes, progressRes] = await Promise.all([
                 axios.get("/api/quiz"),
                 axios.get(`/api/progress?email=${user.email}`)
@@ -84,14 +79,27 @@ export function QuizProvider({ children }: { children: ReactNode }) {
             setQuestions(quizRes.data)
             
             const p = progressRes.data
-            if (p && !p.empty && !isFresh) {
+            if (p && !p.empty) {
                 if (p.answers) setAnswers(p.answers)
                 if (p.visited) setVisited(new Set(p.visited))
                 if (p.marked) setMarked(new Set(p.marked))
                 if (p.index !== undefined) setIndex(p.index)
-                if (p.timeRemaining !== undefined) setInitialTime(p.timeRemaining)
-            } 
-            else {
+                if (p.startTime) {
+                    setStartTime(p.startTime)
+                    const elapsed = Math.floor((Date.now() - p.startTime) / 1000)
+                    const remaining = 1800 - elapsed
+                    if (remaining <= 0) {
+                        submit()
+                        return
+                    }
+                    setInitialTime(remaining)
+                } else {
+                    const now = Date.now()
+                    setStartTime(now)
+                }
+            } else {
+                const now = Date.now()
+                setStartTime(now)
                 setVisited(new Set([0]))
             }
 
@@ -144,11 +152,12 @@ export function QuizProvider({ children }: { children: ReactNode }) {
                 index,
                 visited: Array.from(visited),
                 marked: Array.from(marked),
+                startTime,
             }).catch(console.error)
         }, 1000)
 
         return () => clearTimeout(timerId)
-    }, [answers, index, visited, marked, userInfo])
+    }, [answers, index, visited, marked, startTime, userInfo])
       
     useEffect(() => {
         setVisited((prev) => new Set(prev).add(index))
@@ -196,9 +205,12 @@ export function QuizProvider({ children }: { children: ReactNode }) {
         }
     }, [userInfo, questions, answers, router])
 
+    const handleTimeUpdate = useCallback((time: number) => {
+    }, [])
+
     return (
         <QuizContext.Provider value={{
-            questions, answers, index, visited, marked, loading, error, isSidebarOpen, userInfo, initialTime,
+            questions, answers, index, visited, marked, loading, error, isSidebarOpen, userInfo, initialTime, handleTimeUpdate,
             setIndex, setIsSidebarOpen, handleOptionSelect, handleSaveAndNext, handleClearResponse, handleMarkForReviewNext, submit
         }}>
             {children}

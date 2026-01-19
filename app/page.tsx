@@ -47,8 +47,12 @@ export default function Home() {
     router.push("/login")
   }
 
-  const handleStart = () => {
-    router.push("/instructions?fresh=true")
+  const handleStart = async () => {
+    const user = getUserFromCookie()
+    if (user) {
+      await axios.delete(`/api/progress?email=${user.email}`)
+    }
+    router.push("/instructions")
   }
 
   if (loading) return <LoadingSpinner />

@@ -1,7 +1,15 @@
 "use client"
 import { useEffect, useState, useCallback, memo } from "react"
 
-function Timer({ onEnd, initialTime = 1800 }: { onEnd: () => void, initialTime?: number }) {
+function Timer({ 
+  onEnd, 
+  initialTime = 1800,
+  onTimeUpdate 
+}: { 
+  onEnd: () => void, 
+  initialTime?: number,
+  onTimeUpdate?: (time: number) => void 
+}) {
   const [time, setTime] = useState(initialTime)
 
   useEffect(() => {
@@ -16,12 +24,16 @@ function Timer({ onEnd, initialTime = 1800 }: { onEnd: () => void, initialTime?:
           onEnd()
           return 0
         }
-        return prev - 1
+        const newTime = prev - 1
+        if (onTimeUpdate) {
+          onTimeUpdate(newTime)
+        }
+        return newTime
       })
     }, 1000)
 
     return () => clearInterval(timer)
-  }, [onEnd])
+  }, [onEnd, onTimeUpdate])
 
   const formatTime = useCallback((seconds: number) => {
     const m = Math.floor(seconds / 60)

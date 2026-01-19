@@ -9,9 +9,7 @@ export default function Instructions() {
 
   const handleStart = () => {
     if (accepted) {
-        const params = new URLSearchParams(window.location.search)
-        const isFresh = params.get("fresh") === "true"
-        router.push(isFresh ? "/quiz?fresh=true" : "/quiz")
+        router.push("/quiz")
     }
   }
 

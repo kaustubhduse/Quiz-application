@@ -15,7 +15,7 @@ function QuizContent() {
   const { 
       questions, index, answers, loading, error, isSidebarOpen, setIsSidebarOpen,
       initialTime, submit, handleOptionSelect, handleMarkForReviewNext, handleClearResponse, 
-      handleSaveAndNext
+      handleSaveAndNext, handleTimeUpdate
   } = useQuiz()
 
   if (loading) return <LoadingSpinner />
@@ -41,7 +41,7 @@ function QuizContent() {
             <div className="flex items-center gap-3 md:gap-4">
                  <span className="text-sm hidden md:inline text-slate-400 font-medium">Time Left:</span>
                  <div className="bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-lg text-emerald-400 font-mono font-bold text-lg shadow-inner">
-                    <Timer initialTime={initialTime} onEnd={submit} /> 
+                    <Timer initialTime={initialTime} onEnd={submit} onTimeUpdate={handleTimeUpdate} /> 
                  </div>
             </div>
         </div>
