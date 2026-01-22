@@ -78,19 +78,16 @@ export function QuizProvider({ children }: { children: ReactNode }) {
 
             const p = progressRes.data
             if (p && !p.empty) {
-                // Restore questions if available (prevents shuffle on refresh)
                 if (p.questions && p.questions.length > 0) {
                     setQuestions(p.questions)
-                } else {
-                    // LEGACY FIX: If progress exists but no questions (old data), 
-                    // use fresh questions BUT save them immediately so they stick.
+                } 
+                else {
                     setQuestions(quizRes.data)
-                    // Trigger immediate save to lock these questions
                     axios.post("/api/progress", {
                         email: user.email,
                         questions: quizRes.data,
                         answers: p.answers || Array(15).fill(null),
-                        index: 0, // Reset to 0 as requested
+                        index: 0,
                         visited: Array.from(p.visited ? new Set(p.visited) : new Set([0])),
                         marked: Array.from(p.marked ? new Set(p.marked) : new Set()),
                         startTime: p.startTime || Date.now(),
@@ -100,10 +97,6 @@ export function QuizProvider({ children }: { children: ReactNode }) {
                 if (p.answers) setAnswers(p.answers)
                 if (p.visited) setVisited(new Set(p.visited))
                 if (p.marked) setMarked(new Set(p.marked))
-                
-                // USER REQUEST: "dont navigate to last save and next question"
-                // We intentionally DO NOT restore the index, letting it default to 0 (Question 1)
-                // if (p.index !== undefined) setIndex(p.index) 
 
                 if (p.startTime) {
                     setStartTime(p.startTime)
@@ -119,13 +112,11 @@ export function QuizProvider({ children }: { children: ReactNode }) {
                     setStartTime(now)
                 }
             } else {
-                // Fresh start
-                setQuestions(quizRes.data)
+                    setQuestions(quizRes.data)
                 const now = Date.now()
                 setStartTime(now)
                 setVisited(new Set([0]))
                 
-                // IMPACT: Save fresh questions immediately to prevent shuffle on next refresh
                  axios.post("/api/progress", {
                     email: user.email,
                     questions: quizRes.data,
@@ -156,23 +147,41 @@ export function QuizProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         fetchQuiz()
 
-        return () => {
+        // Robust auto-submit on browser close/refresh/navigation
+        const handleUnload = () => {
             if (!isSubmittedRef.current && questionsRef.current.length > 0) {
-               const u = getUserFromCookie()
-               if (u) {
-                 const payload = {
-                    email: u.email,
-                    questions: questionsRef.current,
-                    answers: answersRef.current,
-                 };
-                 fetch("/api/submit", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(payload),
-                    keepalive: true,
-                 }).catch(console.error)
-               }
+                const u = getUserFromCookie()
+                if (u) {
+                    const payload = {
+                        email: u.email,
+                        questions: questionsRef.current,
+                        answers: answersRef.current,
+                    }
+                    
+                    // Try sendBeacon first (most reliable for unload)
+                    const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' })
+                    const success = navigator.sendBeacon("/api/submit", blob)
+
+                    // Fallback to fetch with keepalive if sendBeacon fails or returns false
+                    if (!success) {
+                        fetch("/api/submit", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(payload),
+                            keepalive: true,
+                        }).catch(console.error)
+                    }
+                }
             }
+        }
+
+        // 'pagehide' is the modern standard for detecting tab close/refresh
+        window.addEventListener("pagehide", handleUnload)
+        
+        return () => {
+            window.removeEventListener("pagehide", handleUnload)
+            // Also trigger on unmount just in case (e.g. client-side navigation)
+            handleUnload() 
         }
     }, [])
 
