@@ -76,10 +76,15 @@ export function QuizProvider({ children }: { children: ReactNode }) {
                 axios.get(`/api/progress?email=${user.email}`)
             ])
 
-            setQuestions(quizRes.data)
-            
             const p = progressRes.data
             if (p && !p.empty) {
+                // Restore questions if available (prevents shuffle on refresh)
+                if (p.questions && p.questions.length > 0) {
+                    setQuestions(p.questions)
+                } else {
+                    setQuestions(quizRes.data)
+                }
+
                 if (p.answers) setAnswers(p.answers)
                 if (p.visited) setVisited(new Set(p.visited))
                 if (p.marked) setMarked(new Set(p.marked))
@@ -98,6 +103,8 @@ export function QuizProvider({ children }: { children: ReactNode }) {
                     setStartTime(now)
                 }
             } else {
+                // Fresh start
+                setQuestions(quizRes.data)
                 const now = Date.now()
                 setStartTime(now)
                 setVisited(new Set([0]))
@@ -148,6 +155,7 @@ export function QuizProvider({ children }: { children: ReactNode }) {
         const timerId = setTimeout(() => {
             axios.post("/api/progress", {
                 email: userInfo.email,
+                questions, // Save the questions to prevent shuffle on refresh
                 answers,
                 index,
                 visited: Array.from(visited),
@@ -157,7 +165,7 @@ export function QuizProvider({ children }: { children: ReactNode }) {
         }, 1000)
 
         return () => clearTimeout(timerId)
-    }, [answers, index, visited, marked, startTime, userInfo])
+    }, [questions, answers, index, visited, marked, startTime, userInfo])
       
     useEffect(() => {
         setVisited((prev) => new Set(prev).add(index))

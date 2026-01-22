@@ -13,9 +13,6 @@ export async function POST(req: Request) {
     if(answers[i] === val){
       score++
     } 
-    else{
-      console.log(`Mismatch Q${i + 1}: User [${answers[i]}] vs Correct [${val}]`)
-    }
   })
   console.log(`Final Score Calculated: ${score}`)
 
