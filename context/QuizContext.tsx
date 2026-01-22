@@ -82,13 +82,29 @@ export function QuizProvider({ children }: { children: ReactNode }) {
                 if (p.questions && p.questions.length > 0) {
                     setQuestions(p.questions)
                 } else {
+                    // LEGACY FIX: If progress exists but no questions (old data), 
+                    // use fresh questions BUT save them immediately so they stick.
                     setQuestions(quizRes.data)
+                    // Trigger immediate save to lock these questions
+                    axios.post("/api/progress", {
+                        email: user.email,
+                        questions: quizRes.data,
+                        answers: p.answers || Array(15).fill(null),
+                        index: 0, // Reset to 0 as requested
+                        visited: Array.from(p.visited ? new Set(p.visited) : new Set([0])),
+                        marked: Array.from(p.marked ? new Set(p.marked) : new Set()),
+                        startTime: p.startTime || Date.now(),
+                    }).catch(console.error)
                 }
 
                 if (p.answers) setAnswers(p.answers)
                 if (p.visited) setVisited(new Set(p.visited))
                 if (p.marked) setMarked(new Set(p.marked))
-                if (p.index !== undefined) setIndex(p.index)
+                
+                // USER REQUEST: "dont navigate to last save and next question"
+                // We intentionally DO NOT restore the index, letting it default to 0 (Question 1)
+                // if (p.index !== undefined) setIndex(p.index) 
+
                 if (p.startTime) {
                     setStartTime(p.startTime)
                     const elapsed = Math.floor((Date.now() - p.startTime) / 1000)
@@ -108,6 +124,17 @@ export function QuizProvider({ children }: { children: ReactNode }) {
                 const now = Date.now()
                 setStartTime(now)
                 setVisited(new Set([0]))
+                
+                // IMPACT: Save fresh questions immediately to prevent shuffle on next refresh
+                 axios.post("/api/progress", {
+                    email: user.email,
+                    questions: quizRes.data,
+                    answers: Array(15).fill(null),
+                    index: 0,
+                    visited: [0],
+                    marked: [],
+                    startTime: now,
+                }).catch(console.error)
             }
 
             setLoading(false)
